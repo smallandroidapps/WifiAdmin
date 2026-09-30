@@ -23,6 +23,7 @@ import com.location.wifiadmin.data.DeviceType
 fun DeviceCard(
     device: Device,
     onPauseToggle: (Boolean) -> Unit,
+    onPriorityToggle: () -> Unit,
     onBlockClick: () -> Unit,
     onSpeedLimitClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -42,7 +43,7 @@ fun DeviceCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Header Row: Icon, Device Name, Status Badge
+            // Header Row: Icon, Device Name, Badges
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -70,12 +71,30 @@ fun DeviceCard(
                     Spacer(modifier = Modifier.width(12.dp))
 
                     Column {
-                        Text(
-                            text = device.name,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = device.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            if (device.isPriority) {
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(Color(0xFFFFD54F))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        text = "QoS PRIORITY",
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = Color.Black
+                                    )
+                                }
+                            }
+                        }
                         Text(
                             text = "${device.vendor} • ${device.connectionType}",
                             style = MaterialTheme.typography.bodySmall,
@@ -88,18 +107,49 @@ fun DeviceCard(
                 StatusChip(status = device.status)
             }
 
+            // High Bandwidth Usage / Hog Alert Indicator
+            if (device.isHighUsage && !device.isBlocked && !device.isPaused) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Surface(
+                    color = Color(0xFFFFF8E1),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = Color(0xFFF57F17),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Bandwidth Hog Detected: Traffic @ ${device.currentUsageMbpsText}",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFF57F17)
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Details: IP, MAC, Bandwidth limits
+            // Details: IP, MAC, Bandwidth speed/limits
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
                     Text(
-                        text = "IP: ${device.ipAddress}",
+                        text = "IP: ${device.ipAddress} • Live: ${device.currentUsageMbpsText}",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                     )
                     Text(
                         text = "MAC: ${device.macAddress}",
@@ -125,7 +175,7 @@ fun DeviceCard(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "DL: ${device.downloadLimitMbpsText}",
+                                text = "Limit: ${device.downloadLimitMbpsText}",
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -162,20 +212,32 @@ fun DeviceCard(
                     )
                 }
 
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    // QoS Priority Boost Toggle
+                    IconButton(
+                        onClick = onPriorityToggle,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (device.isPriority) Icons.Default.Star else Icons.Default.StarOutline,
+                            contentDescription = "Priority Boost",
+                            tint = if (device.isPriority) Color(0xFFF57F17) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        )
+                    }
+
                     // Speed Limit Button
                     OutlinedButton(
                         onClick = onSpeedLimitClick,
-                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                         modifier = Modifier.height(36.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Speed,
                             contentDescription = "Speed Limit",
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = "Speed", fontSize = 12.sp)
+                        Text(text = "Speed", fontSize = 11.sp)
                     }
 
                     // Block Button
@@ -185,16 +247,16 @@ fun DeviceCard(
                             containerColor = if (device.isBlocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.errorContainer,
                             contentColor = if (device.isBlocked) Color.White else MaterialTheme.colorScheme.onErrorContainer
                         ),
-                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                         modifier = Modifier.height(36.dp)
                     ) {
                         Icon(
                             imageVector = if (device.isBlocked) Icons.Default.Lock else Icons.Default.Block,
                             contentDescription = "Block Device",
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = if (device.isBlocked) "Blocked" else "Block", fontSize = 12.sp)
+                        Text(text = if (device.isBlocked) "Blocked" else "Block", fontSize = 11.sp)
                     }
                 }
             }

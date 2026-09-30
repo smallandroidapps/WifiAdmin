@@ -16,13 +16,14 @@ class NetworkControlRepository(
         val freshDevices = scanner.scanLocalNetwork()
         _networkState.update { state ->
             val updatedList = freshDevices.map { newDev ->
-                // Preserve user-applied status (paused/blocked/limits) if device existed previously
+                // Preserve user-applied status (paused/blocked/limits/priority) if device existed previously
                 val existing = state.devices.find { it.macAddress.equals(newDev.macAddress, ignoreCase = true) }
                 if (existing != null) {
                     newDev.copy(
                         status = existing.status,
                         downloadLimitKbps = existing.downloadLimitKbps,
                         uploadLimitKbps = existing.uploadLimitKbps,
+                        isPriority = existing.isPriority,
                         blockedUntilTimestamp = existing.blockedUntilTimestamp
                     )
                 } else {
@@ -34,6 +35,17 @@ class NetworkControlRepository(
                 isScanning = false,
                 lastScanTimestamp = System.currentTimeMillis()
             )
+        }
+    }
+
+    fun togglePriorityBoost(macAddress: String) {
+        _networkState.update { state ->
+            val updatedDevices = state.devices.map { dev ->
+                if (dev.macAddress.equals(macAddress, ignoreCase = true)) {
+                    dev.copy(isPriority = !dev.isPriority)
+                } else dev
+            }
+            state.copy(devices = updatedDevices)
         }
     }
 

@@ -4,11 +4,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PauseCircle
 import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.WifiTethering
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -18,6 +18,7 @@ fun QuickActionBar(
     isScanning: Boolean,
     onScanClick: () -> Unit,
     onGuestNetworkClick: () -> Unit,
+    onShareQrClick: () -> Unit,
     onPauseAllClick: () -> Unit,
     onResumeAllClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -37,18 +38,18 @@ fun QuickActionBar(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             // Scan Button
             Button(
                 onClick = onScanClick,
                 enabled = !isScanning,
                 modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(vertical = 12.dp)
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 10.dp)
             ) {
                 if (isScanning) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
+                        modifier = Modifier.size(16.dp),
                         color = MaterialTheme.colorScheme.onPrimary,
                         strokeWidth = 2.dp
                     )
@@ -56,49 +57,66 @@ fun QuickActionBar(
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = "Scan",
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                 }
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(text = if (isScanning) "Scanning..." else "Scan", fontSize = 12.sp)
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(text = if (isScanning) "Scanning" else "Scan", fontSize = 11.sp)
+            }
+
+            // Share QR Button
+            FilledTonalButton(
+                onClick = onShareQrClick,
+                modifier = Modifier.weight(1.1f),
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 10.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.QrCode,
+                    contentDescription = "Share QR",
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(text = "Share QR", fontSize = 11.sp)
             }
 
             // Guest Network Button
             OutlinedButton(
                 onClick = onGuestNetworkClick,
-                modifier = Modifier.weight(1.2f),
-                contentPadding = PaddingValues(vertical = 12.dp)
+                modifier = Modifier.weight(1.1f),
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 10.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.WifiTethering,
-                    contentDescription = "Guest Wi-Fi",
-                    modifier = Modifier.size(18.dp)
+                    contentDescription = "Guest",
+                    modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "Guest Wi-Fi", fontSize = 12.sp)
+                Text(text = "Guest", fontSize = 11.sp)
             }
 
             // Pause All
             OutlinedIconButton(
                 onClick = onPauseAllClick,
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(42.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.PauseCircle,
                     contentDescription = "Pause All Devices",
-                    tint = MaterialTheme.colorScheme.error
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(20.dp)
                 )
             }
 
             // Resume All
             OutlinedIconButton(
                 onClick = onResumeAllClick,
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(42.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.PlayCircle,
                     contentDescription = "Resume All Devices",
-                    tint = MaterialTheme.colorScheme.tertiary
+                    tint = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }

@@ -24,6 +24,8 @@ data class Device(
     val status: DeviceStatus = DeviceStatus.ACTIVE,
     val downloadLimitKbps: Int = 0,
     val uploadLimitKbps: Int = 0,
+    val currentUsageKbps: Int = 0,
+    val isPriority: Boolean = false,
     val signalStrengthDbm: Int = -55,
     val connectionType: String = "5GHz",
     val blockedUntilTimestamp: Long = 0L,
@@ -32,6 +34,10 @@ data class Device(
     val isBlocked: Boolean get() = status == DeviceStatus.BLOCKED
     val isPaused: Boolean get() = status == DeviceStatus.PAUSED
     val isUnlimited: Boolean get() = downloadLimitKbps <= 0 && uploadLimitKbps <= 0
+    val isHighUsage: Boolean get() = currentUsageKbps >= 15000 // >= 15 Mbps
+
+    val currentUsageMbpsText: String
+        get() = if (currentUsageKbps < 1000) "${currentUsageKbps} Kbps" else "%.1f Mbps".format(currentUsageKbps / 1000.0)
 
     val downloadLimitMbpsText: String
         get() = if (downloadLimitKbps <= 0) "Unlimited" else "${downloadLimitKbps / 1000} Mbps"

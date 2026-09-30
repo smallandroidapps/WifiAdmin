@@ -3,7 +3,6 @@ package com.location.wifiadmin.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.location.wifiadmin.data.Device
-import com.location.wifiadmin.data.DeviceStatus
 import com.location.wifiadmin.data.NetworkControlRepository
 import com.location.wifiadmin.data.NetworkState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,6 +35,9 @@ class MainViewModel(
     private val _showGuestNetworkDialog = MutableStateFlow(false)
     val showGuestNetworkDialog: StateFlow<Boolean> = _showGuestNetworkDialog.asStateFlow()
 
+    private val _showQrShareDialog = MutableStateFlow(false)
+    val showQrShareDialog: StateFlow<Boolean> = _showQrShareDialog.asStateFlow()
+
     init {
         // Automatically perform initial scan on start
         triggerScan()
@@ -57,6 +59,10 @@ class MainViewModel(
 
     fun clearFilter() {
         _activeFilter.value = DeviceFilter.ALL
+    }
+
+    fun togglePriorityBoost(macAddress: String) {
+        repository.togglePriorityBoost(macAddress)
     }
 
     fun pauseDevice(macAddress: String) {
@@ -99,6 +105,14 @@ class MainViewModel(
 
     fun closeGuestNetworkDialog() {
         _showGuestNetworkDialog.value = false
+    }
+
+    fun openQrShareDialog() {
+        _showQrShareDialog.value = true
+    }
+
+    fun closeQrShareDialog() {
+        _showQrShareDialog.value = false
     }
 
     fun createGuestNetwork(ssid: String, durationHours: Int, password: String) {

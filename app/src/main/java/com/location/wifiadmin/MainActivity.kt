@@ -37,6 +37,7 @@ class MainActivity : ComponentActivity() {
                 val selectedForBlock by viewModel.selectedDeviceForBlock.collectAsState()
                 val selectedForSpeedLimit by viewModel.selectedDeviceForSpeedLimit.collectAsState()
                 val showGuestDialog by viewModel.showGuestNetworkDialog.collectAsState()
+                val showQrDialog by viewModel.showQrShareDialog.collectAsState()
 
                 val displayedDevices = remember(networkState.devices, activeFilter) {
                     when (activeFilter) {
@@ -101,6 +102,7 @@ class MainActivity : ComponentActivity() {
                                         isScanning = networkState.isScanning,
                                         onScanClick = { viewModel.triggerScan() },
                                         onGuestNetworkClick = { viewModel.openGuestNetworkDialog() },
+                                        onShareQrClick = { viewModel.openQrShareDialog() },
                                         onPauseAllClick = { viewModel.pauseAll() },
                                         onResumeAllClick = { viewModel.resumeAll() }
                                     )
@@ -172,6 +174,9 @@ class MainActivity : ComponentActivity() {
                                                 viewModel.resumeDevice(device.macAddress)
                                             }
                                         },
+                                        onPriorityToggle = {
+                                            viewModel.togglePriorityBoost(device.macAddress)
+                                        },
                                         onBlockClick = { viewModel.openBlockDialog(device) },
                                         onSpeedLimitClick = { viewModel.openSpeedLimitDialog(device) }
                                     )
@@ -210,6 +215,13 @@ class MainActivity : ComponentActivity() {
                                 onConfirmCreate = { ssid, hours, pass ->
                                     viewModel.createGuestNetwork(ssid, hours, pass)
                                 }
+                            )
+                        }
+
+                        if (showQrDialog) {
+                            ShareWifiQrDialog(
+                                networkState = networkState,
+                                onDismiss = { viewModel.closeQrShareDialog() }
                             )
                         }
                     }
